@@ -12,7 +12,6 @@ from nest.engine.vpn import (
     configure_wg_interface,
     assign_wg_address,
     add_wg_peer,
-    WireGuardPeerConfig,
     set_wg_interface_up,
     get_wg_interface_address,
 )
@@ -192,11 +191,9 @@ def connect_wireguard(
                 local_peer["node"].id,
                 wg_interface_name,
                 remote_peer["public_key"],
-                WireGuardPeerConfig(
-                    allowed_ips=f"{remote_peer['tunnel_ip']}/32",
-                    endpoint=remote_peer["endpoint"],
-                    persistent_keepalive=persistent_keepalive,
-                ),
+                allowed_ips=f"{remote_peer['tunnel_ip']}/32",
+                endpoint=remote_peer["endpoint"],
+                persistent_keepalive=persistent_keepalive,
             )
 
     tun_interfaces = []

@@ -29,7 +29,6 @@ from .wireguard import (
     create_wg_interface,
     configure_wg_interface,
     assign_wg_address,
-    WireGuardPeerConfig,
     add_wg_peer,
     remove_wg_peer,
     set_wg_interface_up,
