@@ -9,22 +9,12 @@ place, so higher-level topology APIs can focus on orchestration.
 
 import os
 import tempfile
-from dataclasses import dataclass
 from ipaddress import ip_interface
 from typing import Optional, Tuple
 
 from nest.engine.exec import exec_subprocess
 from nest.engine.ip_link import add_wg_interface as ip_add_wg_interface
 from nest.topology.address import Address
-
-
-@dataclass(frozen=True)
-class WireGuardPeerConfig:
-    """Peer settings used when configuring a WireGuard remote peer."""
-
-    allowed_ips: str
-    endpoint: Optional[str] = None
-    persistent_keepalive: Optional[int] = None
 
 
 def _run_command(cmd: str):
@@ -160,11 +150,14 @@ def assign_wg_address(ns_name: str, interface_name: str, address: str):
     _run_command(cmd)
 
 
+# pylint: disable=too-many-arguments
 def add_wg_peer(
     ns_name: str,
     interface_name: str,
     peer_public_key: str,
-    peer_config: WireGuardPeerConfig,
+    allowed_ips: str,
+    endpoint: Optional[str] = None,
+    persistent_keepalive: Optional[int] = None,
 ):
     """Add a peer entry to a WireGuard interface.
 
@@ -176,19 +169,23 @@ def add_wg_peer(
         Local WireGuard interface name.
     peer_public_key : str
         Public key of the remote peer.
-    peer_config : WireGuardPeerConfig
-        Allowed IPs plus optional endpoint and keepalive settings.
+    allowed_ips : str
+        Comma-separated CIDR list accepted from the peer.
+    endpoint : str, optional
+        Peer endpoint in ``host:port`` format.
+    persistent_keepalive : int, optional
+        Keepalive interval in seconds.
     """
 
     cmd = (
         f"ip netns exec {ns_name} "
         f"wg set {interface_name} peer {peer_public_key} "
-        f"allowed-ips {peer_config.allowed_ips}"
+        f"allowed-ips {allowed_ips}"
     )
-    if peer_config.endpoint is not None:
-        cmd += f" endpoint {peer_config.endpoint}"
-    if peer_config.persistent_keepalive is not None:
-        cmd += f" persistent-keepalive {peer_config.persistent_keepalive}"
+    if endpoint is not None:
+        cmd += f" endpoint {endpoint}"
+    if persistent_keepalive is not None:
+        cmd += f" persistent-keepalive {persistent_keepalive}"
     _run_command(cmd)
 
 
